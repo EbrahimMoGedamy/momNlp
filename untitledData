@@ -1,0 +1,471 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jun  7 12:41:00 2020
+
+@author: ebrahim
+"""
+
+
+#doc_a = "ذهب محمد الى المدرسه على دراجته. هذا اول يوم له في المدرسة"
+#doc_a = doc_a.decode('utf-8')
+#https://www.ritchieng.com/machine-learning-multinomial-naive-bayes-vectorization/
+#https://medium.com/@hritikattri10/feature-extraction-using-tf-idf-algorithm-44eedb37305e
+import re
+import nltk
+import codecs
+import pandas as pd
+from nltk.corpus import stopwords 
+from nltk.tokenize import word_tokenize,sent_tokenize
+from nltk.stem.isri import ISRIStemmer 
+import numpy as np
+from sklearn.feature_extraction.text import TfidfVectorizer , TfidfTransformer ,CountVectorizer
+from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score , confusion_matrix,classification_report
+import json
+import http.client
+
+   
+#from cltk.stop.arabic.stopword_filter import stopwords_filter as ar_stop_filter
+#from cltk.tokenize.word import WordTokenizer
+
+print("                 ========== Reading DataSet Urinary Tract Infections File  =============\n")
+with codecs.open(r"/Users/ebrahiMoGedamy/Documents/NLP/nlpTasks/MomcareAR/MomcareARData/Urinary Tract InfectionsAR.txt")as f:
+    dataTableSet=f.read()
+#print(dataTableSet)    
+
+
+print("                 ========== Word Tokenization =============\n")
+word_tokens = word_tokenize(dataTableSet)
+#print(word_tokens)
+
+print("                 ========== Stemming =============\n")
+st = ISRIStemmer()
+for a in word_tokens:
+    st.stem(a)
+
+   
+print("                 ========== Lemmatization =============\n")
+#for item in word_tokens:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#    
+#conn = http.client.HTTPSConnection("farasa-api.qcri.org") 
+#payload = "{\"text\":\"%s\"}"% word_tokens
+#payload = payload.encode('utf-8')
+#headers = { 'content-type': "application/json", 'cache-control': "no-cache", }
+#conn.request("POST", "/msa/webapi/lemma", payload, headers)
+#res = conn.getresponse()
+#data = res.read().decode('utf-8')
+#data_dict = json.loads(data)
+#print(data_dict['result'])
+
+
+print("                 ========== Remove StepWords =============\n")
+sw = stopwords.words('arabic')
+stopped_tokens = [i for i in word_tokens if not i in sw]
+print(stopped_tokens)
+#
+##print("                 ========== Pos Tagging =============\n")
+##sentence = nltk.tokenize.sent_tokenize(dataTableSet)
+##tokens = [nltk.tokenize.wordpunct_tokenize(s) for s in sentence]
+##PosTokens = [nltk.pos_tag(e) for e in tokens]
+##chunks = nltk.ne_chunk_sents(PosTokens)
+##for tree in chunks:
+##    print(tree)
+#   
+#    
+#print("                 ========== Vocab =============\n")
+#vec = CountVectorizer()
+#utivocab = sorted(set(stopped_tokens))
+#utivec=vec.fit_transform(stopped_tokens).toarray()
+#print(len(utivocab), utivocab)
+#print(vec.vocabulary_)
+#
+#    
+## ######################################################################################################   
+#print("                 ========== Reading DataSet perniciousanemia File  =============\n")
+#with codecs.open(r"/Users/ebrahiMoGedamy/Documents/NLP/nlpTasks/MomcareAR/MomcareARData/perniciousanemiaAR.txt",encoding="utf8")as f:
+#    perniciousanemiadata=f.read()
+#    
+#print("                 ========== Word Tokenization =============\n")
+#word_tokensperniciousanemia = word_tokenize(perniciousanemiadata)
+##print(word_tokens)
+#
+#print("                 ========== Stemming =============\n")
+#st = ISRIStemmer()
+#for a in word_tokensperniciousanemia:
+#    print(st.stem(a))
+#    
+#    
+#print("                 ========== Lemmatization =============\n")
+#for item in word_tokensperniciousanemia:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#    
+#conn = http.client.HTTPSConnection("farasa-api.qcri.org") 
+#payload = "{\"text\":\"%s\"}"% word_tokensperniciousanemia
+#payload = payload.encode('utf-8')
+#headers = { 'content-type': "application/json", 'cache-control': "no-cache", }
+#conn.request("POST", "/msa/webapi/lemma", payload, headers)
+#res = conn.getresponse()
+#data = res.read().decode('utf-8')
+#data_dict = json.loads(data)
+#print(data_dict['result'])
+#
+#
+#print("                 ========== Remove StepWords =============\n")
+#sw = stopwords.words('arabic')
+#stopped_tokensperniciousanemia = [i for i in data_dict['result'] if not i in sw]
+#for item in stopped_tokensperniciousanemia:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+##    print(item)   
+##print(stopped_tokensperniciousanemia) 
+#   
+#print("                 ========== Vocab =============\n")
+#vec = CountVectorizer()
+#perniciousanemiavocab = sorted(set(stopped_tokensperniciousanemia))
+#perniciousanemiavec=vec.fit_transform(stopped_tokensperniciousanemia).toarray()
+#print(len(perniciousanemiavocab), perniciousanemiavocab)
+#print(vec.vocabulary_)   
+#    
+#    
+# ######################################################################################################   
+#print("                 ========== Reading DataSet GIissues File  =============\n")
+#with codecs.open(r"/Users/ebrahiMoGedamy/Documents/NLP/nlpTasks/MomcareAR/MomcareARData/GIissues.txt",encoding="utf8")as f:
+#    GIissuesdata=f.read()
+#
+#print("                 ========== Word Tokenization =============\n")
+#word_tokensGIissues = word_tokenize(GIissuesdata)
+##print(word_tokens)
+#
+#print("                 ========== Stemming =============\n")
+#st = ISRIStemmer()
+#for a in word_tokensGIissues:
+#    print(st.stem(a))
+#    
+#    
+#print("                 ========== Lemmatization =============\n")
+#for item in word_tokensGIissues:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#    
+#conn = http.client.HTTPSConnection("farasa-api.qcri.org") 
+#payload = "{\"text\":\"%s\"}"% word_tokensGIissues
+#payload = payload.encode('utf-8')
+#headers = { 'content-type': "application/json", 'cache-control': "no-cache", }
+#conn.request("POST", "/msa/webapi/lemma", payload, headers)
+#res = conn.getresponse()
+#data = res.read().decode('utf-8')
+#data_dict = json.loads(data)
+##print(data_dict['result'])
+#
+#print("                 ========== Remove StepWords =============\n")
+#sw = stopwords.words('arabic')
+#stopped_tokensGIissues = [i for i in data_dict['result'] if not i in sw]
+#for item in stopped_tokensGIissues:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+##    print(item)   
+##print(stopped_tokensGIissues)
+#    
+#print("                 ========== Vocab =============\n")
+#vec = CountVectorizer()
+#GIissuesvocab = sorted(set(stopped_tokensGIissues))
+#GIissuesvec=vec.fit_transform(stopped_tokensGIissues).toarray()
+#print(len(GIissuesvocab), GIissuesvocab)
+#print(vec.vocabulary_) 
+#
+#
+## ######################################################################################################   
+#print("                 ========== Reading DataSet Pneumonia File  =============\n")
+#with codecs.open(r"/Users/ebrahiMoGedamy/Documents/NLP/nlpTasks/MomcareAR/MomcareARData/ PneumoniaAR.txt",encoding="utf8")as f:
+#    Pneumoniadata=f.read()
+#
+#print("                 ========== Word Tokenization =============\n")
+#word_tokensPneumonia = word_tokenize(Pneumoniadata)
+##print(word_tokens)
+#
+#print("                 ========== Stemming =============\n")
+#st = ISRIStemmer()
+#for a in word_tokensPneumonia:
+#    print(st.stem(a))
+#    
+#    
+#print("                 ========== Lemmatization =============\n")
+#for item in word_tokensPneumonia:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#    
+#conn = http.client.HTTPSConnection("farasa-api.qcri.org") 
+#payload = "{\"text\":\"%s\"}"% word_tokensPneumonia
+#payload = payload.encode('utf-8')
+#headers = { 'content-type': "application/json", 'cache-control': "no-cache", }
+#conn.request("POST", "/msa/webapi/lemma", payload, headers)
+#res = conn.getresponse()
+#data = res.read().decode('utf-8')
+#data_dict = json.loads(data)
+##print(data_dict['result'])
+#
+#
+#print("                 ========== Remove StepWords =============\n")
+#sw = stopwords.words('arabic')
+#stopped_tokensPneumonia = [i for i in data_dict['result'] if not i in sw]
+#for item in stopped_tokensPneumonia:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+##    print(item)   
+##print(stopped_tokensPneumonia)
+#    
+#print("                 ========== Vocab =============\n")
+#vec = CountVectorizer()
+#Pneumoniavocab = sorted(set(stopped_tokensPneumonia))
+#Pneumoniavec=vec.fit_transform(stopped_tokensPneumonia).toarray()
+#print(len(Pneumoniavocab), Pneumoniavocab)
+#print(vec.vocabulary_) 
+#
+#
+## ######################################################################################################   
+#print("                 ========== Reading DataSet iron-deficiencyanemia File  =============\n")
+#with codecs.open(r"/Users/ebrahiMoGedamy/Documents/NLP/nlpTasks/MomcareAR/MomcareARData/ iron-deficiencyanemiaAR.txt",encoding="utf8")as f:
+#    deficiencyanemiadata=f.read()
+#
+#print("                 ========== Word Tokenization =============\n")
+#word_tokensiron_deficiencyanemia = word_tokenize(deficiencyanemiadata)
+##print(word_tokens)
+#
+#print("                 ========== Stemming =============\n")
+#st = ISRIStemmer()
+#for a in word_tokensiron_deficiencyanemia:
+#    print(st.stem(a))
+#    
+#    
+#print("                 ========== Lemmatization =============\n")
+#for item in word_tokensiron_deficiencyanemia:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#    
+#conn = http.client.HTTPSConnection("farasa-api.qcri.org") 
+#payload = "{\"text\":\"%s\"}"% word_tokensiron_deficiencyanemia
+#payload = payload.encode('utf-8')
+#headers = { 'content-type': "application/json", 'cache-control': "no-cache", }
+#conn.request("POST", "/msa/webapi/lemma", payload, headers)
+#res = conn.getresponse()
+#data = res.read().decode('utf-8')
+#data_dict = json.loads(data)
+##print(data_dict['result'])
+#
+#
+#print("                 ========== Remove StepWords =============\n")
+#sw = stopwords.words('arabic')
+#stopped_tokensdeficiencyanemia  = [i for i in data_dict['result'] if not i in sw]
+#for item in stopped_tokensdeficiencyanemia:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#
+#
+#print("                 ========== Vocab =============\n")
+#vec = CountVectorizer()
+#deficiencyanemiavocab = sorted(set(stopped_tokensdeficiencyanemia))
+#deficiencyanemiavec=vec.fit_transform(stopped_tokensdeficiencyanemia).toarray()
+#print(len(deficiencyanemiavocab), deficiencyanemiavocab)
+#print(vec.vocabulary_) 
+#
+#all_of_data=[]
+#for i in utivocab:
+#    all_of_data.append(i)
+#for i in perniciousanemiavocab:
+#    all_of_data.append(i)    
+#for i in GIissuesvocab:
+#    all_of_data.append(i)
+#for i in deficiencyanemiavocab:
+#    all_of_data.append(i)
+#for i in Pneumoniavocab:
+#    all_of_data.append(i)
+##print("all_of_data",all_of_data)
+#
+#
+##print("                 ========== Word Tokenization =============\n")
+##word_tokensall_of_data = word_tokenize(all_of_data)
+##word_tokensall_of_data = [word.lower() for word in word_tokensall_of_data if re.match('^[a-zA-Z]+', word)] 
+##print(word_tokensall_of_data)
+#
+#print("                 ========== Stemming =============\n")
+#st = ISRIStemmer()
+#for a in all_of_data:
+#    st.stem(a)
+#    
+#    
+##print("                 ========== Lemmatization =============\n")
+##for item in all_of_data:
+##    item.replace('\n', '')
+##    item.replace('"', '')
+##    re.sub('<*?&.;>', ' ', item)
+##    re.sub(".", "", item)
+##    
+##conn = http.client.HTTPSConnection("farasa-api.qcri.org") 
+##payload = "{\"text\":\"%s\"}"% all_of_data
+##payload = payload.encode('utf-8')
+##headers = { 'content-type': "application/json", 'cache-control': "no-cache", }
+##conn.request("POST", "/msa/webapi/lemma", payload, headers)
+##res = conn.getresponse()
+##data = res.read().decode('utf-8')
+##data_dict = json.loads(data)
+##print(data_dict['result'])
+#
+#
+#print("                 ========== Remove StepWords =============\n")
+#sw = stopwords.words('arabic')
+#stopped_tokensall_of_data= [i for i in all_of_data if not i in sw]
+#for item in stopped_tokensall_of_data:
+#    item.replace('\n', '')
+#    item.replace('"', '')
+#    re.sub('<*?&.;>', ' ', item)
+#    re.sub(".", "", item)
+#print(stopped_tokensall_of_data) 
+##all_data_train[:415]   
+#
+#print("                 ========== Vocab(all_of_data) =============\n")
+#
+#vec = TfidfVectorizer()
+#all_of_vec=vec.fit(stopped_tokensall_of_data)
+#print(pd.DataFrame(vec.transform(stopped_tokensall_of_data).toarray(), columns=sorted(vec.vocabulary_.keys())))
+#print(all_of_vec.vocabulary_)
+#
+#
+#def stratified_split(dataset, test, label_idx=-1, cv_num=1):
+#    """
+#    random stratified split by label, will update for year later
+#    :param dataset: list of dataset
+#    :param test:
+#    :param label_idx:
+#    :param cv_num: the number of cross_validation
+#    :return:
+#    """
+#    sss = StratifiedShuffleSplit(n_splits=cv_num, test_size=test, random_state=0)
+#    y = [item[label_idx] for item in dataset]
+#
+#    train_idx, test_idx = [], []
+#
+#    for train, test in sss.split(dataset, y):
+#        train_idx.append(train)
+#        test_idx.append(test)
+#    return train_idx, test_idx 
+#
+#print(stratified_split(stopped_tokensall_of_data,0.2,-1,1))
+#
+#X_train, X_test, y_train, y_test = train_test_split(stopped_tokensall_of_data,,test_size = 0.2,random_state = 1)
+#
+#count_vect = CountVectorizer()
+#X_train_counts = count_vect.fit_transform(X_train)
+#
+#tfidf_transformer = TfidfTransformer()
+#X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
+#
+#X_train_final = vec.fit_transform(X_train)
+#print("X_train_final",X_train_final)
+#
+#text_clf = Pipeline([('tfidf', TfidfVectorizer()),
+#                      ('clf', MultinomialNB()),
+#                    ])
+#text_clf.fit(X_train, y_train)
+#
+#predictions = text_clf.predict(X_test)
+#
+#print("accuracy_score",accuracy_score(y_test, predictions))
+#print("confusion_matrix",confusion_matrix(y_test, predictions))
+#print("classification_report",classification_report(y_test, predictions))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#train, test = train_test_split(all_of_data, test_size = 0.2)
+
+
+#vec = CountVectorizer()
+#all_of_datavocab = sorted(set(stopped_tokensall_of_data))
+#all_of_datavec=vec.fit_transform(stopped_tokensall_of_data)
+#arr_counts=all_of_datavec.toarray()
+#print(len(all_of_datavocab), all_of_datavocab)
+#print(vec.vocabulary_) 
+# TF-IDF
+
+#tfidf_transformer = TfidfTransformer()
+#X_train_tfidf = tfidf_transformer.fit_transform(all_of_datavec)
+##print(X_train_tfidf)
+##X_train, X_test, y_train, y_test = train_test_split(X_train_tfidf,test_size = 0.25)
+#training, testing = train_test_split(X_train_tfidf,test_size = 0.25 ,random_state=50)
+##print(len(training))
+#print(len(testing))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
